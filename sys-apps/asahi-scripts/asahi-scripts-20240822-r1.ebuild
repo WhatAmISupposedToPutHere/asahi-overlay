@@ -8,10 +8,12 @@ HOMEPAGE="https://asahilinux.org/"
 SRC_URI="https://github.com/AsahiLinux/${PN}/archive/refs/tags/${PV}.tar.gz -> ${PN}-${PV}.tar.gz"
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="arm64"
+KEYWORDS="~arm64"
 
 BDEPEND="
-	dev-build/make"
+	dev-build/make
+	virtual/udev
+"
 
 src_prepare() {
 	default
@@ -23,10 +25,15 @@ src_compile() {
 
 src_install() {
 	emake DESTDIR="${D}" PREFIX="/usr" SYS_PREFIX="" install-dracut
+	emake DESTDIR="${D}" PREFIX="/usr" install-macsmc-battery
+
+	newinitd "${FILESDIR}/${PN}-macsmc-battery.openrc" "macsmc-battery"
 
 	# install gentoo sys config
 	insinto /etc/default
 	newins "${FILESDIR}"/update-m1n1.gentoo.conf update-m1n1
+	exeinto /usr/lib/kernel/install.d/
+	doexe "${FILESDIR}/99-update-m1n1.install"
 }
 
 pkg_postinst() {
